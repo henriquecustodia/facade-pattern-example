@@ -5,10 +5,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { UsersService } from './shared/services/users.service';
 import { LoggedUserService } from './shared/stores/logged-user.service';
-import { AuthService } from './shared/services/auth.service';
-import { switchMap, tap } from 'rxjs';
+import { AuthFacadeService } from './shared/facades/auth-facade.service';
 
 @Component({
   selector: 'app-root',
@@ -35,9 +33,8 @@ import { switchMap, tap } from 'rxjs';
   imports: [ReactiveFormsModule],
 })
 export class AppComponent {
-  usersService = inject(UsersService);
+  authFacadeService = inject(AuthFacadeService);
   loggedUserService = inject(LoggedUserService);
-  authService = inject(AuthService);
 
   form = new FormGroup({
     username: new FormControl('', {
@@ -56,19 +53,6 @@ export class AppComponent {
     const username = this.form.controls.username.value;
     const password = this.form.controls.password.value;
 
-    this.authService
-      .login({
-        username,
-        password,
-      })
-      .pipe(
-        switchMap(() => {
-          return this.usersService.getUserByUsername(username);
-        }),
-        tap((user) => {
-          this.loggedUserService.setState(user);
-        })
-      )
-      .subscribe(() => {});
+    this.authFacadeService.login({ username, password }).subscribe(() => {});
   }
 }
